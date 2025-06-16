@@ -1,4 +1,4 @@
-# Compiladores-T4
+# Compiladores-T5
 Trabalho 5 da Disciplina de Compiladores
 Implementação de um gerador de código para a linguagem LA (Linguagem Algorítmica) desenvolvida pelo prof. Jander
 
@@ -10,5 +10,5 @@ Integrantes:
 Código utilizado para testar com o corretor automático:
 
 ```
-java -jar ./compiladores-corretor-automatico-1.0-SNAPSHOT-jar-with-dependencies.jar "java -jar ./target/JanderLexico-1.0-SNAPSHOT-jar-with-dependencies.jar" gcc "/tmp" "/home/zephryz/Desktop/ufscar/compiladores/casos-de-teste/casos-de-teste/" "802058, 812305, 801301" t5
+java -jar .\compiladores-corretor-automatico-1.0-SNAPSHOT-jar-with-dependencies.jar "java -jar D:\Faculdade\Compiladores\Compiladores-T5\target\JanderLexico-1.0-SNAPSHOT-jar-with-dependencies.jar" gcc "c:\temp" "D:\Faculdade\Compiladores\casos-de-teste\casos-de-teste" "802058, 812305, 801301" t5
 ```
