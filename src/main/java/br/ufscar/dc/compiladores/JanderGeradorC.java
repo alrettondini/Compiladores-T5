@@ -234,12 +234,13 @@ public class JanderGeradorC extends JanderBaseVisitor<Void> {
             output.append("    typedef struct {\n");
             for (VariavelContext memberCtx : ctx.tipo().registro().variavel()) {
                 String memberTypeName = getFullCTypeName(memberCtx.tipo().tipo_estendido());
-                boolean isLiteral = memberTypeName.equals("char");
+                boolean isLiteral = memberTypeName.equals("char*");
+                String finalMemberType = isLiteral ? "char" : memberTypeName;
 
                 for(IdentificadorContext ident : memberCtx.identificador()){
-                    output.append("        ").append(memberTypeName).append(" ").append(ident.getText());
+                    output.append("        ").append(finalMemberType).append(" ").append(ident.getText());
                     if(isLiteral) {
-                        output.append("[81]");
+                        output.append("[100]");
                     }
                     output.append(";\n");
                 }
@@ -277,38 +278,39 @@ public class JanderGeradorC extends JanderBaseVisitor<Void> {
                 output.append("        ");
 
                 String memberTypeName = getFullCTypeName(memberCtx.tipo().tipo_estendido());
-                boolean isMemberLiteral = memberTypeName.equals("char");
+                boolean isMemberLiteral = memberTypeName.equals("char*");
+                String finalMemberType = isMemberLiteral ? "char" : memberTypeName;
 
                 List<String> memberIdents = memberCtx.identificador().stream()
                     .map(ident -> {
                         String idStr = ident.getText();
-                        if (isMemberLiteral) {
-                            return idStr + "[81]";
-                        }
-                        return idStr;
+                        return isMemberLiteral ? idStr + "[100]" : idStr;
                     })
                     .collect(Collectors.toList());
                 
-                output.append(memberTypeName).append(" ").append(String.join(", ", memberIdents)).append(";\n");
+                output.append("        ").append(finalMemberType).append(" ").append(String.join(", ", memberIdents)).append(";\n");
             }
-            
             output.append("    } ").append(String.join(", ", structVarNames)).append(";\n");
+            return null;
 
         } else {
-           String typeName = getFullCTypeName(ctx.tipo().tipo_estendido());
-            boolean isLiteral = typeName.equals("char");
+            String typeName = getFullCTypeName(ctx.tipo().tipo_estendido());
+            boolean isLiteral = typeName.equals("char*");
 
             List<String> idents = ctx.identificador().stream()
                 .map(ident -> {
                     String idStr = ident.getText();
                     if (isLiteral) {
-                        return idStr + "[81]";
+                        return idStr + "[100]";
                     }
                     return idStr;
                 })
                 .collect(Collectors.toList());
-            
-            output.append("    ").append(typeName).append(" ").append(String.join(", ", idents)).append(";\n");
+
+
+            String finalTypeName = isLiteral ? "char" : typeName;
+
+            output.append("    ").append(finalTypeName).append(" ").append(String.join(", ", idents)).append(";\n");
         }
         
         return null;
@@ -321,28 +323,28 @@ public class JanderGeradorC extends JanderBaseVisitor<Void> {
             String varName = ident.getText();
             JanderType varType = symbolTable.getSymbolType(varName);
 
-            String formatSpecifier = "";
-            String argument = "";
+            if (varType == JanderType.LITERAL) {
+                output.append("    gets(").append(varName).append(");\n");
+            } else {
+                String formatSpecifier = "";
+                String argument = "";
 
-            switch (varType) {
-                case INTEGER:
-                    formatSpecifier = "%d";
-                    argument = "&" + varName;
-                    break;
-                case REAL:
-                    formatSpecifier = "%f";
-                    argument = "&" + varName;
-                    break;
-                case LITERAL:
-                    formatSpecifier = "%s";
-                    argument = varName;
-                    break;
-                default:
-                    formatSpecifier = "%d";
-                    argument = "&" + varName;
-                    break;
+                switch (varType) {
+                    case INTEGER:
+                        formatSpecifier = "%d";
+                        argument = "&" + varName;
+                        break;
+                    case REAL:
+                        formatSpecifier = "%f";
+                        argument = "&" + varName;
+                        break;
+                    default:
+                        formatSpecifier = "%d";
+                        argument = "&" + varName;
+                        break;
+                }
+                output.append("    scanf(\"").append(formatSpecifier).append("\", ").append(argument).append(");\n");
             }
-            output.append("    scanf(\"").append(formatSpecifier).append("\", ").append(argument).append(");\n");
         }
         return null;
     }
@@ -509,7 +511,7 @@ public class JanderGeradorC extends JanderBaseVisitor<Void> {
         lhsExpr.children = new ArrayList<>();
         lhsExpr.children.add(ctx.identificador());
         
-        JanderType lhsType = semantico.getExpressionType(lhsExpr);
+        JanderType lhsType = semantico.resolveIdentificadorType(ctx.identificador(), symbolTable, new StringBuilder());
         
         if (lhsType == JanderType.LITERAL && rhs.startsWith("\"")) {
             output.append("    strcpy(").append(lhs).append(", ").append(rhs).append(");\n");

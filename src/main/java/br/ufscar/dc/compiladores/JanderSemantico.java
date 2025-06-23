@@ -2,7 +2,6 @@ package br.ufscar.dc.compiladores;
 
 import br.ufscar.dc.compiladores.JanderParser.*;
 import br.ufscar.dc.compiladores.SymbolTable.JanderType;
-import br.ufscar.dc.compiladores.SymbolTable;
 import org.antlr.v4.runtime.Token;
 
 import java.io.PrintWriter;
@@ -17,7 +16,7 @@ public class JanderSemantico extends JanderBaseVisitor<Void> {
 
     private boolean dentroDeFuncao = false;
 
-    private SymbolTable.JanderType resolveIdentificadorType(
+    public SymbolTable.JanderType resolveIdentificadorType(
             IdentificadorContext identCtx,
             SymbolTable symbolTable,
             StringBuilder outFullAccessPath) {
@@ -737,10 +736,6 @@ public class JanderSemantico extends JanderBaseVisitor<Void> {
             JanderSemanticoUtils.addSemanticError(
                 ctx.RETORNE().getSymbol(),
                 "comando retorne nao permitido nesse escopo");
-        } else {
-            if (ctx.expressao() != null) {
-                JanderType tipoRetornoExpressao = JanderSemanticoUtils.checkType(symbolTable, ctx.expressao());
-            }
         }
         return null;
     }

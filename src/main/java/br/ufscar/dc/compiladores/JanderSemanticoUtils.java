@@ -8,7 +8,6 @@ import org.antlr.v4.runtime.Token;
 
 import br.ufscar.dc.compiladores.JanderParser.*;
 import br.ufscar.dc.compiladores.SymbolTable.JanderType;
-import java.util.stream.IntStream;
 
 public class JanderSemanticoUtils {
     // Lista para armazenar erros semânticos encontrados durante a análise.
